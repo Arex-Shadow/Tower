@@ -27,27 +27,36 @@ module Tower
 			//Laya.stage.scaleMode = "showall";
 			//Laya.stage.bgColor = "#FFFFFF";
 			
-			//Laya.stage.on(Laya.Event.CLICK, this, this.OnClick);
+			Laya.stage.on(Laya.Event.CLICK, this, this.OnClick);
 		}
 		public Init():void
 		{
 			//this.m_img = new mySprite();
 			this.m_map = new myMap();
-			//this.m_Hero = new Roles(RoleType.Hero);
-			
+			setTimeout(function() {
+				
+			}, 1000/60);
+			this.m_Hero = new Roles(RoleType.Hero);
+			let point:laya.maths.Point = this.m_map.GetScreenPosOfWallFloorByTilePos(1,1); 
+			this.m_Hero.SetPos(point.x, point.y);
 		}
 		private OnClick():void
 		{
 			let endX = Laya.stage.mouseX;
 			let endY = Laya.stage.mouseY;
+			console.log(`Start:X ${this.m_Hero.RoleMoveAni.x} Y ${this.m_Hero.RoleMoveAni.y}`);
+			console.log(`End:X ${endX}  Y ${endY}`);
+			//根据距离设定时间保持运动的匀速
 			let nTimeX : number = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
 			let nTimeY : number = Math.abs(endY - this.m_Hero.RoleMoveAni.y) * 5;
 			if(endX < this.m_Hero.RoleMoveAni.x)
 			{
+				this.m_Hero.SetMoveDir(MoveDir.Left);
 				this.timeLine.addLabel("TurnLeft", 0).to(this.m_Hero.RoleMoveAni,{x:endX},nTimeX, null, 0);
 			}
 			else
 			{
+				this.m_Hero.SetMoveDir(MoveDir.Right);
 				this.timeLine.addLabel("TurnRight", 0).to(this.m_Hero.RoleMoveAni,{x:endX},nTimeX, null, 0);
 			}
 			if(endY < this.m_Hero.RoleMoveAni.y)
@@ -58,29 +67,25 @@ module Tower
 			{
 				this.timeLine.addLabel("TurnDown", 0).to(this.m_Hero.RoleMoveAni,{y:endY},nTimeY, null, 0);
 			}
-			
-			/*Tween.to(this.m_Hero.RoleMoveAni,
-			{
-				x: endX
-			}, nTime);
-			Tween.to(this.m_Hero.RoleMoveAni,
-			{
-				y: endY
-			}, 1000);*/
 			this.timeLine.play(0,false);
-			//this.timeLine.on(Laya.Event.LABEL, this, this.onTimeLineLabel);
+			this.timeLine.on(Laya.Event.LABEL, this, this.onTimeLineLabel);
 			this.timeLine.on(Laya.Event.COMPLETE,this,this.onTimeLineComplete);
 		}
 		private onTimeLineLabel(label:string)
 		{
-			if(label == "TurnLeft") this.m_Hero.SetMoveDir(MoveDir.Left);
-			else if(label == "TurnRight") this.m_Hero.SetMoveDir(MoveDir.Right);
-			else if(label == "TurnUp") this.m_Hero.SetMoveDir(MoveDir.Up);
-			else if(label == "TurnDown") this.m_Hero.SetMoveDir(MoveDir.Down);
+			if(label == "TurnLeft") 
+				this.m_Hero.SetMoveDir(MoveDir.Left);
+			else if(label == "TurnRight") 
+				this.m_Hero.SetMoveDir(MoveDir.Right);
+			else if(label == "TurnUp") 
+				this.m_Hero.SetMoveDir(MoveDir.Up);
+			else if(label == "TurnDown")
+				this.m_Hero.SetMoveDir(MoveDir.Down);
 		}
 		private onTimeLineComplete():void
 		{
 			this.timeLine.reset();
+			//this.m_Hero.Reset();
 		}
 	 }
 }

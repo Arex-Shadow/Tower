@@ -20,8 +20,8 @@ module Tower{
 		constructor()
 		{
 			this.createMap();
-			Laya.stage.on(Event.MOUSE_DOWN, this, this.mouseDown);
-			Laya.stage.on(Event.MOUSE_UP, this, this.mouseUp);
+			//Laya.stage.on(Event.MOUSE_DOWN, this, this.mouseDown);
+			//Laya.stage.on(Event.MOUSE_UP, this, this.mouseUp);
 		}
 		//创建地图
 		private createMap() {
@@ -42,12 +42,8 @@ module Tower{
 			this.m_lyrfloor = this.tiledMap.getLayerByIndex(0);
 			console.log("layer floor name:" + this.m_lyrfloor.name);
 			this.m_lyrWall = this.tiledMap.getLayerByIndex(1);
-			console.log("Layer wall name:" + this.m_lyrWall.name);
+			console.log("Layer wall name:" + (this.m_lyrWall.name));
 			this.m_lyrNpc = this.tiledMap.getLayerByIndex(2);
-			console.log("Layer NPC name:" + this.m_lyrNpc.name);
-			console.log(this.m_lyrWall.getTileData(0,0));
-			console.log(this.m_lyrWall.getTileData(1,0));
-			console.log(this.m_lyrWall.getTileData(2,0));
 			this.resize();
 		}
 		//鼠标按下拖动地图
@@ -71,6 +67,22 @@ module Tower{
 		private resize(): void {
 			//改变地图视口大小
 			this.tiledMap.changeViewPort(this.mX, this.mY, Browser.width, Browser.height);
+		}
+		//根据鼠标位置获取对应Wall层的格子坐标
+		public GetTilePosOfWallFloorByMousePos():any
+		{
+			let result:laya.maths.Point = new laya.maths.Point();
+			this.m_lyrWall.getTilePositionByScreenPos(Laya.stage.mouseX, Laya.stage.mouseY, result);
+			result.x = Math.floor(result.x);
+			result.y = Math.floor(result.y);
+			return result;
+		}
+		//根据Wall层格子坐标获取对应的屏幕坐标
+		public GetScreenPosOfWallFloorByTilePos(x:number, y:number) : any
+		{	
+			let result : laya.maths.Point = new laya.maths.Point();
+			this.m_lyrWall.getScreenPositionByTilePos(x, y, result);
+			return result;
 		}
 	}
 }

@@ -21,7 +21,6 @@ var Tower;
     var Roles = (function () {
         function Roles(Type) {
             this._strAtlasFile = "res/Role/move";
-            this.MoveAni = []; // move animation
             var str = this._strAtlasFile + ".json";
             console.log(str);
             //Laya.loader.load(str, Handler.create(this, this.CreateRole, [Type]), null, Loader.ATLAS);
@@ -36,14 +35,19 @@ var Tower;
                 case RoleType.Hero:
                     //四个方向的行走动画
                     for (var i = 0; i < 4; i++) {
-                        this.MoveAni[i] = new Laya.Animation();
+                        //this.MoveAni[i] = new Laya.Animation();	
+                        this.RoleMoveAni = new Laya.Animation();
                         var strAniImgs = [];
                         for (var j = 0; j < 6; j++) {
-                            strAniImgs[j] = this._strAtlasFile + "\/" + MoveDir[i].toString() + "_" + (j + 1) + ".png";
+                            strAniImgs[j] = this._strAtlasFile + "\/" + MoveDir[i] + "_" + (j + 1) + ".png";
                         }
-                        this.MoveAni[i].loadImages(strAniImgs);
+                        //this.MoveAni[i].loadImages(strAniImgs);
+                        console.log(MoveDir[i]);
+                        this.RoleMoveAni.loadImages(strAniImgs, MoveDir[i]);
                     }
                     this.SetMoveDir(MoveDir.Down);
+                    this.SetPos(Laya.stage.width / 2, Laya.stage.height / 2);
+                    Laya.stage.addChild(this.RoleMoveAni);
                     break;
                 case RoleType.Evil:
                     break;
@@ -52,23 +56,15 @@ var Tower;
             }
         };
         Roles.prototype.SetMoveDir = function (Dir) {
-            var posX = Laya.stage.width / 2;
-            var posY = Laya.stage.height / 2;
-            if (this.RoleMoveAni != null) {
-                posX = this.RoleMoveAni.x;
-                posY = this.RoleMoveAni.y;
-                Laya.stage.removeChild(this.RoleMoveAni);
-                this.RoleMoveAni.stop();
-            }
-            this.RoleMoveAni = this.MoveAni[Dir];
-            this.MoveAni[Dir].interval = 100; // 设置播放间隔（单位：毫秒）
-            this.MoveAni[Dir].index = 1; // 当前播放索引
-            this.MoveAni[Dir].play(); // 播放图集动画
-            // 获取动画的边界信息
-            var bounds = this.RoleMoveAni.getGraphicBounds();
-            this.RoleMoveAni.pivot(bounds.width / 2, bounds.height / 2);
+            this.RoleMoveAni.interval = 100;
+            this.RoleMoveAni.play(0, true, MoveDir[Dir]);
+        };
+        Roles.prototype.SetPos = function (posX, posY) {
             this.RoleMoveAni.pos(posX, posY);
-            Laya.stage.addChild(this.RoleMoveAni);
+        };
+        Roles.prototype.Reset = function () {
+            this.RoleMoveAni.stop();
+            this.RoleMoveAni.index = 0;
         };
         return Roles;
     }());
