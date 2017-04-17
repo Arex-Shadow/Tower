@@ -6,7 +6,7 @@ module Tower
 	import Handler = Laya.Handler;
 	import Loader = Laya.Loader;
 	import Rectangle = Laya.Rectangle;
-
+	import Tween   = Laya.Tween;
 	export enum RoleType
 	{
 		Hero,
@@ -25,18 +25,20 @@ module Tower
 		readonly _strAtlasFile:string = "res/Role/move";
 		//private MoveAni:Laya.Animation[] = [];// move animation
 		public RoleMoveAni : Laya.Animation;
-		constructor(Type:RoleType)
+		constructor(Type:RoleType, CompleteHandler?:laya.utils.Handler)
 		{
 			let str:string = this._strAtlasFile + ".json";
 			console.log(str);
 			//Laya.loader.load(str, Handler.create(this, this.CreateRole, [Type]), null, Loader.ATLAS);
-			Laya.loader.load(str, Handler.create(this, this.CreateRole, [Type]), null, Loader.ATLAS);
+			Laya.loader.load(str, Handler.create(this, this.CreateRole, [Type, CompleteHandler]), null, Loader.ATLAS);
 		}
+		get height():number{ return this.RoleMoveAni.height; }
+		get width():number{ return this.RoleMoveAni.width; }
 		private test():void
 		{
 			console.log("test");
 		}
-		private CreateRole(Type:RoleType) : void
+		private CreateRole(Type:RoleType, CompleteHandler:laya.utils.Handler) : void
 		{
 			console.log("CreateRole");
 			switch(Type)
@@ -59,6 +61,7 @@ module Tower
 					this.SetMoveDir(MoveDir.Down);
 					this.SetPos(Laya.stage.width/2, Laya.stage.height/2);
 					Laya.stage.addChild(this.RoleMoveAni);
+					CompleteHandler.run();
 				break;
 				case RoleType.Evil:
 				break;
@@ -69,17 +72,42 @@ module Tower
 		}
 		public SetMoveDir(Dir : MoveDir): void
 		{
+			this.RoleMoveAni.scaleX = 0.7;
+			this.RoleMoveAni.scaleY = 0.7;
 			this.RoleMoveAni.interval = 100;
 			this.RoleMoveAni.play(0,true, MoveDir[Dir]);
 		}
 		public SetPos(posX:number, posY:number)
-		{
-			this.RoleMoveAni.pos(posX,posY);
+		{	
+			let offsetY = this.height / 2;
+			let offsetX = this.width / 2;
+			this.RoleMoveAni.pos(posX - offsetX, posY - offsetY);
 		}
 		public Reset()
 		{
 			this.RoleMoveAni.stop();
 			this.RoleMoveAni.index = 0;
+		}
+		public moveTo(pt:laya.maths.Point)
+		{
+			if(pt.x != this.RoleMoveAni.x)
+			{
+				if(pt.x < this.RoleMoveAni.x)
+					this.SetMoveDir(MoveDir.Left);
+				else if(pt.x > this.RoleMoveAni.x)
+					this.SetMoveDir(MoveDir.Right);
+				let nTimeX : number = Math.abs(pt.x - this.RoleMoveAni.x) * 5;
+				Tween.to(this.RoleMoveAni, {x : (pt.x)}, nTimeX);
+			}
+			if(pt.y != this.RoleMoveAni.y)
+			{
+				if(pt.y < this.RoleMoveAni.y)
+					this.SetMoveDir(MoveDir.Up);
+				else if(pt.y > this.RoleMoveAni.y)
+					this.SetMoveDir(MoveDir.Down);
+				let nTimeY : number = Math.abs(pt.y - this.RoleMoveAni.y) * 5;
+				Tween.to(this.RoleMoveAni, {y : (pt.y)}, nTimeY);
+			}
 		}
 	}
 }

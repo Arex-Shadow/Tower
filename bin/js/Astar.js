@@ -3,66 +3,87 @@
 */
 var Tower;
 (function (Tower) {
-    var MyPoint = (function () {
-        function MyPoint(a, b) {
-            this.init(a, b);
-        }
-        MyPoint.prototype.init = function (a, b) {
-            this.x = a;
-            this.y = b;
-        };
-        return MyPoint;
-    }());
-    Tower.MyPoint = MyPoint;
+    var Point = laya.maths.Point;
     var MyNode = (function () {
         function MyNode() {
+            this.pos = new Point();
+            this.f = 0;
+            this.g = 0;
+            this.h = 0;
+            this.isWall = false;
+            this.parent = null;
         }
         MyNode.prototype.debug = function (log) {
             console.log(log);
+        };
+        MyNode.prototype.reset = function () {
+            this.h = this.g = this.f = 0;
+            this.parent = null;
+        };
+        MyNode.prototype.toString = function () {
+            return "pos:{" + this.pos.x + "," + this.pos.y + "} f:{" + this.f + "} g:{" + this.g + "} h:{" + this.h + "} isWall:{" + this.isWall + "} ";
         };
         return MyNode;
     }());
     Tower.MyNode = MyNode;
     var Astar = (function () {
         function Astar(map, lyrIdx) {
+            this.grid = new Array();
             this.init(map, lyrIdx);
         }
         Astar.prototype.init = function (map, lyrIdx) {
-            var xCount = map.numColumnsGrid;
-            var yCount = map.numRowsGrid;
+            var xCount = map.numColumnsTile;
+            var yCount = map.numRowsTile;
             for (var i = 0; i < xCount; i++) {
+                this.grid[i] = new Array();
                 for (var j = 0; j < yCount; j++) {
-                    this.grid[i][j].pos = new MyPoint(i, j);
+                    this.grid[i][j] = new MyNode();
                     this.grid[i][j].f = this.grid[i][j].g = this.grid[i][j].h = 0;
                     this.grid[i][j].parent = null;
                     this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(i, j) > 0);
+                    this.grid[i][j].pos = new Point(i, j);
                 }
             }
         };
-        Astar.prototype.search = function (start, end) {
+        Astar.prototype.search = function (startTile, endTile) {
+            var start = this.grid[startTile.x][startTile.y];
+            start.reset();
+            var end = this.grid[endTile.x][endTile.y];
+            end.reset();
             //this.init(grid);
-            var openList;
-            var closedList;
+            var openList = new Array();
+            var closedList = new Array();
             openList.push(start);
             while (openList.length > 0) {
                 // Grab the lowest f(x) to process next
                 var lowInd = 0;
                 for (var i = 0; i < openList.length; i++) {
+                    // End case -- result has been found, return the traced path
+                    if (openList[i].pos == end.pos) {
+                        var curr = openList[i];
+                        var ret = [];
+                        while (curr.parent) {
+                            ret.push(curr.pos);
+                            curr = curr.parent;
+                        }
+                        return ret.reverse();
+                    }
                     if (openList[i].f < openList[lowInd].f) {
                         lowInd = i;
                     }
                 }
                 var currentNode = openList[lowInd];
                 // End case -- result has been found, return the traced path
-                if (currentNode.pos == end.pos) {
-                    var curr = currentNode;
-                    var ret = [];
-                    while (curr.parent) {
-                        ret.push(curr);
-                        curr = curr.parent;
-                    }
-                    return ret.reverse();
-                }
+                /*if(currentNode.pos == end.pos)
+                {
+                  var curr = currentNode;
+                  var ret = [];
+                  while(curr.parent) {
+                    ret.push(curr.pos);
+                    curr = curr.parent;
+                  }
+                  return ret.reverse();
+                }*/
                 // Normal case -- move currentNode from open to closed, process each of its neighbors
                 openList.splice(lowInd, 1);
                 closedList.push(currentNode);
@@ -93,8 +114,10 @@ var Tower;
                         neighbor.parent = currentNode;
                         neighbor.g = gScore;
                         neighbor.f = neighbor.g + neighbor.h;
-                        neighbor.debug("F: " + neighbor.f + "<br />G: " + neighbor.g + "<br />H: " + neighbor.h);
+                        neighbor.debug(neighbor.toString());
                     }
+                    if (neighbor.pos == end.pos)
+                        break;
                 }
             }
             // No result was found -- empty array signifies failure to find path
@@ -107,19 +130,23 @@ var Tower;
             return d1 + d2;
         };
         Astar.prototype.neighbors = function (node) {
-            var ret;
+            var ret = new Array();
             var x = node.pos.x;
             var y = node.pos.y;
             if (this.grid[x - 1] && this.grid[x - 1][y]) {
+                //this.grid[x-1][y].reset();
                 ret.push(this.grid[x - 1][y]);
             }
             if (this.grid[x + 1] && this.grid[x + 1][y]) {
+                //this.grid[x+1][y].reset();
                 ret.push(this.grid[x + 1][y]);
             }
             if (this.grid[x][y - 1] && this.grid[x][y - 1]) {
+                //this.grid[x][y-1].reset();
                 ret.push(this.grid[x][y - 1]);
             }
             if (this.grid[x][y + 1] && this.grid[x][y + 1]) {
+                //this.grid[x][y+1].reset();
                 ret.push(this.grid[x][y + 1]);
             }
             return ret;

@@ -15,6 +15,7 @@ module Tower
 		private m_Hero : Roles;
 		private m_img:mySprite;
 		private m_map:myMap; 
+		private m_findPath:Astar;
 		private timeLine:Laya.TimeLine = new Laya.TimeLine();
 		constructor() {
 			// 不支持eWebGL时自动切换至Canvas
@@ -33,11 +34,19 @@ module Tower
 		{
 			//this.m_img = new mySprite();
 			this.m_map = new myMap();
-			setTimeout(function() {
-				
-			}, 1000/60);
-			this.m_Hero = new Roles(RoleType.Hero);
-			let point:laya.maths.Point = this.m_map.GetScreenPosOfWallFloorByTilePos(1,1); 
+			this.m_map.createMap("floor001.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
+			
+		}
+		private TiledMapLoadCompleted():void
+		{
+			this.m_map.resize();
+			this.m_Hero = new Roles(RoleType.Hero, laya.utils.Handler.create(this, this.RoleCreateCompleted));
+		}
+		private RoleCreateCompleted()
+		{
+			console.log("completed");
+			this.m_findPath = new Astar(this.m_map.tiledMap, 1);
+			let point:laya.maths.Point = this.m_map.GetScreenPosOfWallFloorByTilePos(1, 1, 1); 
 			this.m_Hero.SetPos(point.x, point.y);
 		}
 		private OnClick():void
@@ -46,8 +55,18 @@ module Tower
 			let endY = Laya.stage.mouseY;
 			console.log(`Start:X ${this.m_Hero.RoleMoveAni.x} Y ${this.m_Hero.RoleMoveAni.y}`);
 			console.log(`End:X ${endX}  Y ${endY}`);
+			let start = this.m_map.GetTilePosOfWallFloorByScreenPos(1, this.m_Hero.RoleMoveAni.x, this.m_Hero.RoleMoveAni.y);
+			let end = this.m_map.GetTilePosOfWallFloorByScreenPos(1, Laya.stage.mouseX, Laya.stage.mouseY);
+			console.log(`Start:${start} End:${end}`);
+			let ret = this.m_findPath.search(start, end);
+			console.log(ret.toString());
+			ret.forEach((val)=>
+			{
+				let pt = this.m_map.GetScreenPosOfWallFloorByTilePos(1, val.y, val.x);
+				this.m_Hero.moveTo(pt);
+			});
 			//根据距离设定时间保持运动的匀速
-			let nTimeX : number = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
+			/*let nTimeX : number = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
 			let nTimeY : number = Math.abs(endY - this.m_Hero.RoleMoveAni.y) * 5;
 			if(endX < this.m_Hero.RoleMoveAni.x)
 			{
@@ -69,7 +88,7 @@ module Tower
 			}
 			this.timeLine.play(0,false);
 			this.timeLine.on(Laya.Event.LABEL, this, this.onTimeLineLabel);
-			this.timeLine.on(Laya.Event.COMPLETE,this,this.onTimeLineComplete);
+			this.timeLine.on(Laya.Event.COMPLETE,this,this.onTimeLineComplete);*/
 		}
 		private onTimeLineLabel(label:string)
 		{

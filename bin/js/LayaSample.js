@@ -24,37 +24,57 @@ var Tower;
         AppLancher.prototype.Init = function () {
             //this.m_img = new mySprite();
             this.m_map = new myMap();
-            setTimeout(function () {
-            }, 1000 / 60);
-            this.m_Hero = new Tower.Roles(Tower.RoleType.Hero);
-            var point = this.m_map.GetScreenPosOfWallFloorByTilePos(1, 1);
+            this.m_map.createMap("floor001.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
+        };
+        AppLancher.prototype.TiledMapLoadCompleted = function () {
+            this.m_map.resize();
+            this.m_Hero = new Tower.Roles(Tower.RoleType.Hero, laya.utils.Handler.create(this, this.RoleCreateCompleted));
+        };
+        AppLancher.prototype.RoleCreateCompleted = function () {
+            console.log("completed");
+            this.m_findPath = new Tower.Astar(this.m_map.tiledMap, 1);
+            var point = this.m_map.GetScreenPosOfWallFloorByTilePos(1, 1, 1);
             this.m_Hero.SetPos(point.x, point.y);
         };
         AppLancher.prototype.OnClick = function () {
+            var _this = this;
             var endX = Laya.stage.mouseX;
             var endY = Laya.stage.mouseY;
             console.log("Start:X " + this.m_Hero.RoleMoveAni.x + " Y " + this.m_Hero.RoleMoveAni.y);
             console.log("End:X " + endX + "  Y " + endY);
+            var start = this.m_map.GetTilePosOfWallFloorByScreenPos(1, this.m_Hero.RoleMoveAni.x, this.m_Hero.RoleMoveAni.y);
+            var end = this.m_map.GetTilePosOfWallFloorByScreenPos(1, Laya.stage.mouseX, Laya.stage.mouseY);
+            console.log("Start:" + start + " End:" + end);
+            var ret = this.m_findPath.search(start, end);
+            console.log(ret.toString());
+            ret.forEach(function (val) {
+                var pt = _this.m_map.GetScreenPosOfWallFloorByTilePos(1, val.y, val.x);
+                _this.m_Hero.moveTo(pt);
+            });
             //根据距离设定时间保持运动的匀速
-            var nTimeX = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
-            var nTimeY = Math.abs(endY - this.m_Hero.RoleMoveAni.y) * 5;
-            if (endX < this.m_Hero.RoleMoveAni.x) {
-                this.m_Hero.SetMoveDir(Tower.MoveDir.Left);
-                this.timeLine.addLabel("TurnLeft", 0).to(this.m_Hero.RoleMoveAni, { x: endX }, nTimeX, null, 0);
+            /*let nTimeX : number = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
+            let nTimeY : number = Math.abs(endY - this.m_Hero.RoleMoveAni.y) * 5;
+            if(endX < this.m_Hero.RoleMoveAni.x)
+            {
+                this.m_Hero.SetMoveDir(MoveDir.Left);
+                this.timeLine.addLabel("TurnLeft", 0).to(this.m_Hero.RoleMoveAni,{x:endX},nTimeX, null, 0);
             }
-            else {
-                this.m_Hero.SetMoveDir(Tower.MoveDir.Right);
-                this.timeLine.addLabel("TurnRight", 0).to(this.m_Hero.RoleMoveAni, { x: endX }, nTimeX, null, 0);
+            else
+            {
+                this.m_Hero.SetMoveDir(MoveDir.Right);
+                this.timeLine.addLabel("TurnRight", 0).to(this.m_Hero.RoleMoveAni,{x:endX},nTimeX, null, 0);
             }
-            if (endY < this.m_Hero.RoleMoveAni.y) {
-                this.timeLine.addLabel("TurnUp", 0).to(this.m_Hero.RoleMoveAni, { y: endY }, nTimeY, null, 0);
+            if(endY < this.m_Hero.RoleMoveAni.y)
+            {
+                this.timeLine.addLabel("TurnUp", 0).to(this.m_Hero.RoleMoveAni,{y:endY},nTimeY, null, 0);
             }
-            else {
-                this.timeLine.addLabel("TurnDown", 0).to(this.m_Hero.RoleMoveAni, { y: endY }, nTimeY, null, 0);
+            else
+            {
+                this.timeLine.addLabel("TurnDown", 0).to(this.m_Hero.RoleMoveAni,{y:endY},nTimeY, null, 0);
             }
-            this.timeLine.play(0, false);
+            this.timeLine.play(0,false);
             this.timeLine.on(Laya.Event.LABEL, this, this.onTimeLineLabel);
-            this.timeLine.on(Laya.Event.COMPLETE, this, this.onTimeLineComplete);
+            this.timeLine.on(Laya.Event.COMPLETE,this,this.onTimeLineComplete);*/
         };
         AppLancher.prototype.onTimeLineLabel = function (label) {
             if (label == "TurnLeft")
