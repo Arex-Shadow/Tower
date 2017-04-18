@@ -24,7 +24,7 @@ var Tower;
         AppLancher.prototype.Init = function () {
             //this.m_img = new mySprite();
             this.m_map = new myMap();
-            this.m_map.createMap("floor001.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
+            this.m_map.createMap("floor002.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
         };
         AppLancher.prototype.TiledMapLoadCompleted = function () {
             this.m_map.resize();
