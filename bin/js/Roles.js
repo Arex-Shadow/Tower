@@ -74,8 +74,9 @@ var Tower;
             this.RoleMoveAni.play(0, true, MoveDir[Dir]);
         };
         Roles.prototype.SetPos = function (posX, posY) {
-            var offsetY = this.height / 2;
-            var offsetX = this.width / 2;
+            var rect = this.RoleMoveAni.getBounds();
+            var offsetY = rect.height / 2;
+            var offsetX = rect.width / 2;
             this.RoleMoveAni.pos(posX - offsetX, posY - offsetY);
         };
         Roles.prototype.Reset = function () {

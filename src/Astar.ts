@@ -36,8 +36,8 @@ module Tower
       }
       init(map :laya.map.TiledMap, lyrIdx:number) 
       {
-          let xCount:number = map.numColumnsTile;
-          let yCount:number = map.numRowsTile;
+          let yCount:number = map.numColumnsTile;
+          let xCount:number = map.numRowsTile;
           for(let i=0; i < xCount; i++)
           {
             this.grid[i] = new Array<MyNode>();
@@ -48,9 +48,24 @@ module Tower
                 this.grid[i][j].parent = null;
                 this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(i,j) > 0);
                 this.grid[i][j].pos = new Point(i,j);
+                let result : laya.maths.Point = new laya.maths.Point();
+                map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(i, j, result);
+                this.createText(i,j,this.grid[i][j].isWall, result);
             }
           }
         }
+        private createText(i,j,isWall, pos): void 
+		    {
+          let label: Laya.Label = new Laya.Label();
+          label.font = "Microsoft YaHei";
+          label.text = `${i},${j},${isWall}`;
+          label.fontSize = 10;
+          label.color = "#00FFFF";
+          Laya.stage.addChild(label);
+          label.x = pos.x;
+          label.y = pos.y;
+          console.log(label.pos);
+		    }
         search(startTile, endTile) : any[]
         {
           let start = this.grid[startTile.x][startTile.y];

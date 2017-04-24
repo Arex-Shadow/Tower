@@ -32,8 +32,8 @@ var Tower;
             this.init(map, lyrIdx);
         }
         Astar.prototype.init = function (map, lyrIdx) {
-            var xCount = map.numColumnsTile;
-            var yCount = map.numRowsTile;
+            var yCount = map.numColumnsTile;
+            var xCount = map.numRowsTile;
             for (var i = 0; i < xCount; i++) {
                 this.grid[i] = new Array();
                 for (var j = 0; j < yCount; j++) {
@@ -42,8 +42,22 @@ var Tower;
                     this.grid[i][j].parent = null;
                     this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(i, j) > 0);
                     this.grid[i][j].pos = new Point(i, j);
+                    var result = new laya.maths.Point();
+                    map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(i, j, result);
+                    this.createText(i, j, this.grid[i][j].isWall, result);
                 }
             }
+        };
+        Astar.prototype.createText = function (i, j, isWall, pos) {
+            var label = new Laya.Label();
+            label.font = "Microsoft YaHei";
+            label.text = i + "," + j + "," + isWall;
+            label.fontSize = 10;
+            label.color = "#00FFFF";
+            Laya.stage.addChild(label);
+            label.x = pos.x;
+            label.y = pos.y;
+            console.log(label.pos);
         };
         Astar.prototype.search = function (startTile, endTile) {
             var start = this.grid[startTile.x][startTile.y];

@@ -17,40 +17,63 @@ module Tower
 		private m_map:myMap; 
 		private m_findPath:Astar;
 		private timeLine:Laya.TimeLine = new Laya.TimeLine();
+		private xPre:number = 0;
+		private yPre:number = 0;
+		private g:Laya.Sprite;
 		constructor() {
 			// 不支持eWebGL时自动切换至Canvas
-			Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
-			Laya.stage.scaleMode = Stage.SCALE_FULL;
+			Laya.init(Browser.width, Browser.height, WebGL);
+			Laya.stage.scaleMode = Stage.SCALE_SHOWALL;
 			Stat.show();
 			Laya.stage.alignV = Stage.ALIGN_MIDDLE;
 			Laya.stage.alignH = Stage.ALIGN_CENTER;
-			
 			//Laya.stage.scaleMode = "showall";
 			//Laya.stage.bgColor = "#FFFFFF";
-			
 			Laya.stage.on(Laya.Event.CLICK, this, this.OnClick);
+			
 		}
 		public Init():void
 		{
 			//this.m_img = new mySprite();
 			this.m_map = new myMap();
-			this.m_map.createMap("floor002.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
-			
+			this.m_map.createMap("floor001.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
+			Browser.width = this.m_map.tiledMap.width;
+			Browser.height = this.m_map.tiledMap.height;
 		}
 		private TiledMapLoadCompleted():void
 		{
 			this.m_map.resize();
-			this.m_Hero = new Roles(RoleType.Hero, laya.utils.Handler.create(this, this.RoleCreateCompleted));
+			if(this.m_Hero == undefined)
+			{
+				this.m_Hero = new Roles(RoleType.Hero, laya.utils.Handler.create(this, this.RoleCreateCompleted));
+			}
+			else this.RoleCreateCompleted();
 		}
 		private RoleCreateCompleted()
 		{
 			console.log("completed");
+			if(this.m_findPath != null) this.m_findPath = null; 
 			this.m_findPath = new Astar(this.m_map.tiledMap, 1);
 			let point:laya.maths.Point = this.m_map.GetScreenPosOfWallFloorByTilePos(1, 1, 1); 
 			this.m_Hero.SetPos(point.x, point.y);
+			this.xPre = this.m_Hero.RoleMoveAni.x;
+			this.yPre = this.m_Hero.RoleMoveAni.y;
 		}
+		
 		private OnClick():void
 		{
+			if(this.g == undefined)
+			{
+				this.g = new Laya.Sprite();
+				Laya.stage.addChild(this.g);
+			}
+			this.g.graphics.clear();
+			//this.g.graphics.drawLine(this.xPre, this.yPre, Laya.stage.mouseX, Laya.stage.mouseY, "#ff0000", 3);
+			//this.xPre = Laya.stage.mouseX;
+			//this.yPre = Laya.stage.mouseY;
+			//this.m_map.GetTilePosOfWallFloorByScreenPos(1, Laya.stage.mouseX, Laya.stage.mouseY);//debug
+			//this.m_map.createMap("floor002.json", laya.utils.Handler.create(this, this.TiledMapLoadCompleted));
+			
 			let endX = Laya.stage.mouseX;
 			let endY = Laya.stage.mouseY;
 			console.log(`Start:X ${this.m_Hero.RoleMoveAni.x} Y ${this.m_Hero.RoleMoveAni.y}`);
@@ -60,11 +83,17 @@ module Tower
 			console.log(`Start:${start} End:${end}`);
 			let ret = this.m_findPath.search(start, end);
 			console.log(ret.toString());
+			let lines = Array()
 			ret.forEach((val)=>
 			{
 				let pt = this.m_map.GetScreenPosOfWallFloorByTilePos(1, val.y, val.x);
-				this.m_Hero.moveTo(pt);
+				//this.m_Hero.moveTo(pt);
+				this.g.graphics.drawLine(this.xPre, this.yPre, pt.x, pt.y, "#ff0000", 3);
+				this.xPre = pt.x;
+				this.yPre = pt.y;
 			});
+
+			this.m_Hero.SetPos(this.xPre, this.yPre);
 			//根据距离设定时间保持运动的匀速
 			/*let nTimeX : number = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
 			let nTimeY : number = Math.abs(endY - this.m_Hero.RoleMoveAni.y) * 5;

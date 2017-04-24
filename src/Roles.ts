@@ -79,8 +79,9 @@ module Tower
 		}
 		public SetPos(posX:number, posY:number)
 		{	
-			let offsetY = this.height / 2;
-			let offsetX = this.width / 2;
+			let rect = this.RoleMoveAni.getBounds()
+			let offsetY = rect.height / 2;
+			let offsetX = rect.width / 2;
 			this.RoleMoveAni.pos(posX - offsetX, posY - offsetY);
 		}
 		public Reset()
