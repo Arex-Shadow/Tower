@@ -38,8 +38,8 @@ module Tower
       }
       init(map :laya.map.TiledMap, lyrIdx:number) 
       {
-          let xCount:number = map.numColumnsTile;
-          let yCount:number = map.numRowsTile;
+          let yCount:number = map.numColumnsTile;
+          let xCount:number = map.numRowsTile;
           for(let i=0; i < xCount; i++)
           {
             this.grid[i] = new Array<MyNode>();
@@ -51,7 +51,7 @@ module Tower
                 this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(j,i) > 0);
                 this.grid[i][j].posTile = new Point(i,j);
                 let result : laya.maths.Point = new laya.maths.Point();
-                map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(i, j, result);
+                map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(j, i, result);
                 this.createText(i,j,this.grid[i][j].isWall, result);
             }
           }

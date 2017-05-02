@@ -34,8 +34,8 @@ var Tower;
             this.init(map, lyrIdx);
         }
         Astar.prototype.init = function (map, lyrIdx) {
-            var xCount = map.numColumnsTile;
-            var yCount = map.numRowsTile;
+            var yCount = map.numColumnsTile;
+            var xCount = map.numRowsTile;
             for (var i = 0; i < xCount; i++) {
                 this.grid[i] = new Array();
                 for (var j = 0; j < yCount; j++) {
@@ -45,7 +45,7 @@ var Tower;
                     this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(j, i) > 0);
                     this.grid[i][j].posTile = new Point(i, j);
                     var result = new laya.maths.Point();
-                    map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(i, j, result);
+                    map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(j, i, result);
                     this.createText(i, j, this.grid[i][j].isWall, result);
                 }
             }
