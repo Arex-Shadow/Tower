@@ -6,11 +6,13 @@ module Tower
   import Point = laya.maths.Point;
   export class MyNode
   {
-     public pos:Point = new Point();
+     public posTile:Point = new Point();
+     //public posScreen:Point = new Point
      public f:number = 0;
      public g:number = 0;
      public h:number = 0;
      public isWall:boolean = false;
+     //public is
      public debug(log:string)
      {
        console.log(log);
@@ -24,7 +26,7 @@ module Tower
      }
      toString():string
      {
-       return `pos:{${this.pos.x},${this.pos.y}} f:{${this.f}} g:{${this.g}} h:{${this.h}} isWall:{${this.isWall}} `;
+       return `pos:{${this.posTile.x},${this.posTile.y}} f:{${this.f}} g:{${this.g}} h:{${this.h}} isWall:{${this.isWall}} `;
      }
   }
 	export class Astar
@@ -36,8 +38,8 @@ module Tower
       }
       init(map :laya.map.TiledMap, lyrIdx:number) 
       {
-          let yCount:number = map.numColumnsTile;
-          let xCount:number = map.numRowsTile;
+          let xCount:number = map.numColumnsTile;
+          let yCount:number = map.numRowsTile;
           for(let i=0; i < xCount; i++)
           {
             this.grid[i] = new Array<MyNode>();
@@ -46,8 +48,8 @@ module Tower
                 this.grid[i][j] = new MyNode();
                 this.grid[i][j].f = this.grid[i][j].g = this.grid[i][j].h = 0;
                 this.grid[i][j].parent = null;
-                this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(i,j) > 0);
-                this.grid[i][j].pos = new Point(i,j);
+                this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(j,i) > 0);
+                this.grid[i][j].posTile = new Point(i,j);
                 let result : laya.maths.Point = new laya.maths.Point();
                 map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(i, j, result);
                 this.createText(i,j,this.grid[i][j].isWall, result);
@@ -67,7 +69,7 @@ module Tower
           console.log(label.pos);
 		    }
         search(startTile, endTile) : any[]
-        {
+        {  
           let start = this.grid[startTile.x][startTile.y];
           start.reset();
           let end = this.grid[endTile.x][endTile.y];
@@ -83,12 +85,12 @@ module Tower
               for(let i=0; i<openList.length; i++) 
               {
                 // End case -- result has been found, return the traced path
-                if(openList[i].pos == end.pos) 
+                if(openList[i].posTile == end.posTile) 
                 {
                   let curr = openList[i];
                   let ret = [];
                   while(curr.parent) {
-                    ret.push(curr.pos);
+                    ret.push(curr.posTile);
                     curr = curr.parent;
                   }
                   return ret.reverse();
@@ -130,7 +132,7 @@ module Tower
                   // This the the first time we have arrived at this node, it must be the best
                   // Also, we need to take the h (heuristic) score since we haven't done so yet
                   gScoreIsBest = true;
-                  neighbor.h = this.heuristic(neighbor.pos, end.pos);
+                  neighbor.h = this.heuristic(neighbor.posTile, end.posTile);
                   openList.push(neighbor);
                 }
                 else if(gScore < neighbor.g) 
@@ -148,7 +150,7 @@ module Tower
                   neighbor.f = neighbor.g + neighbor.h;
                   neighbor.debug(neighbor.toString());
                 }
-                if(neighbor.pos == end.pos) break;
+                if(neighbor.posTile == end.posTile) break;
               }
           }
   
@@ -165,8 +167,8 @@ module Tower
         neighbors(node) 
         {
           let ret = new Array<MyNode>();
-          let x = node.pos.x;
-          let y = node.pos.y;
+          let x = node.posTile.x;
+          let y = node.posTile.y;
           if(this.grid[x-1] && this.grid[x-1][y])
           {
             //this.grid[x-1][y].reset();
@@ -177,12 +179,12 @@ module Tower
             //this.grid[x+1][y].reset();
             ret.push(this.grid[x+1][y]);
           }
-          if(this.grid[x][y-1] && this.grid[x][y-1]) 
+          if(this.grid[x][y-1]) 
           {
             //this.grid[x][y-1].reset();
             ret.push(this.grid[x][y-1]);
           }
-          if(this.grid[x][y+1] && this.grid[x][y+1]) 
+          if(this.grid[x][y+1]) 
           {
             //this.grid[x][y+1].reset();
             ret.push(this.grid[x][y+1]);

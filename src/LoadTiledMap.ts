@@ -30,15 +30,6 @@ module Tower{
 		{
 			//改变地图视口大小
 			this.tiledMap.changeViewPort(this.mX, this.mY, Browser.width, Browser.height);
-			/*let xCount:number = this.tiledMap.numColumnsTile;
-          	let yCount:number = this.tiledMap.numRowsTile;
-			 for(let i=0; i < xCount; i++)
-          	{
-            	for(let j=0; j < yCount; j++)
-            	{  
-					this.createText(i,j);
-				}
-			}*/
 		}
 		
 		//根据鼠标位置获取对应Wall层的格子坐标

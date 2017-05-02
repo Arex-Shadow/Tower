@@ -24,7 +24,7 @@ module Tower
 			// 不支持eWebGL时自动切换至Canvas
 			Laya.init(Browser.width, Browser.height, WebGL);
 			Laya.stage.scaleMode = Stage.SCALE_SHOWALL;
-			Stat.show();
+			//Stat.show();
 			Laya.stage.alignV = Stage.ALIGN_MIDDLE;
 			Laya.stage.alignH = Stage.ALIGN_CENTER;
 			//Laya.stage.scaleMode = "showall";
@@ -78,7 +78,8 @@ module Tower
 			let endY = Laya.stage.mouseY;
 			console.log(`Start:X ${this.m_Hero.RoleMoveAni.x} Y ${this.m_Hero.RoleMoveAni.y}`);
 			console.log(`End:X ${endX}  Y ${endY}`);
-			let start = this.m_map.GetTilePosOfWallFloorByScreenPos(1, this.m_Hero.RoleMoveAni.x, this.m_Hero.RoleMoveAni.y);
+			let start = this.m_map.GetTilePosOfWallFloorByScreenPos(1, this.m_Hero.RoleMoveAni.x + this.m_Hero.RoleMoveAni.width / 2,
+			 this.m_Hero.RoleMoveAni.y + this.m_Hero.RoleMoveAni.height / 2);
 			let end = this.m_map.GetTilePosOfWallFloorByScreenPos(1, Laya.stage.mouseX, Laya.stage.mouseY);
 			console.log(`Start:${start} End:${end}`);
 			let ret = this.m_findPath.search(start, end);
