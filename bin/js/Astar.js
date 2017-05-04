@@ -7,14 +7,15 @@ var Tower;
     var MyNode = (function () {
         function MyNode() {
             this.posTile = new Point();
-            //public posScreen:Point = new Point
+            this.posScreen = new Point();
             this.f = 0;
             this.g = 0;
             this.h = 0;
             this.isWall = false;
+            this.isKey = false;
+            this.isMaster = false;
             this.parent = null;
         }
-        //public is
         MyNode.prototype.debug = function (log) {
             console.log(log);
         };
@@ -28,12 +29,14 @@ var Tower;
         return MyNode;
     }());
     Tower.MyNode = MyNode;
+    var WALL_LAYER_IDX = 1;
+    var NPC_LAYER_IDX = 2;
     var Astar = (function () {
-        function Astar(map, lyrIdx) {
+        function Astar(map) {
             this.grid = new Array();
-            this.init(map, lyrIdx);
+            this.init(map);
         }
-        Astar.prototype.init = function (map, lyrIdx) {
+        Astar.prototype.init = function (map) {
             var yCount = map.numColumnsTile;
             var xCount = map.numRowsTile;
             for (var i = 0; i < xCount; i++) {
@@ -42,19 +45,20 @@ var Tower;
                     this.grid[i][j] = new MyNode();
                     this.grid[i][j].f = this.grid[i][j].g = this.grid[i][j].h = 0;
                     this.grid[i][j].parent = null;
-                    this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(j, i) > 0);
+                    this.grid[i][j].isWall = (map.getLayerByIndex(WALL_LAYER_IDX).getTileData(j, i) > 0);
+                    this.grid[i][j].isMaster = (map.getLayerByIndex(NPC_LAYER_IDX).getTileData(j, i) > 0);
                     this.grid[i][j].posTile = new Point(i, j);
                     var result = new laya.maths.Point();
-                    map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(j, i, result);
-                    this.createText(i, j, this.grid[i][j].isWall, result);
+                    map.getLayerByIndex(WALL_LAYER_IDX).getScreenPositionByTilePos(j, i, result);
+                    this.createText(i, j, this.grid[i][j].isWall, this.grid[i][j].isMaster, result);
                 }
             }
         };
-        Astar.prototype.createText = function (i, j, isWall, pos) {
+        Astar.prototype.createText = function (i, j, isWall, isNPC, pos) {
             var label = new Laya.Label();
             label.font = "Microsoft YaHei";
-            label.text = i + "," + j + "," + isWall;
-            label.fontSize = 10;
+            label.text = i + "," + j + "," + (isWall ? 'T' : 'F') + "," + (isNPC ? 'T' : 'F');
+            label.fontSize = 14;
             label.color = "#00FFFF";
             Laya.stage.addChild(label);
             label.x = pos.x;
@@ -111,7 +115,7 @@ var Tower;
                     }
                     // g score is the shortest distance from start to current node, we need to check if
                     //   the path we have arrived at this neighbor is the shortest one we have seen yet
-                    var gScore = currentNode.g + 1; // 1 is the distance from a node to it's neighbor
+                    var gScore = currentNode.g + 1 + (currentNode.isMaster ? 1 : 0); // 1 is the distance from a node to it's neighbor
                     var gScoreIsBest = false;
                     if (openList.indexOf(neighbor) < 0) {
                         // This the the first time we have arrived at this node, it must be the best

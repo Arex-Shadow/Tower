@@ -53,7 +53,7 @@ module Tower
 		{
 			console.log("completed");
 			if(this.m_findPath != null) this.m_findPath = null; 
-			this.m_findPath = new Astar(this.m_map.tiledMap, 1);
+			this.m_findPath = new Astar(this.m_map.tiledMap);
 			let point:laya.maths.Point = this.m_map.GetScreenPosOfWallFloorByTilePos(1, 1, 1); 
 			this.m_Hero.SetPos(point.x, point.y);
 			this.xPre = this.m_Hero.RoleMoveAni.x;

@@ -41,7 +41,7 @@ var Tower;
             console.log("completed");
             if (this.m_findPath != null)
                 this.m_findPath = null;
-            this.m_findPath = new Tower.Astar(this.m_map.tiledMap, 1);
+            this.m_findPath = new Tower.Astar(this.m_map.tiledMap);
             var point = this.m_map.GetScreenPosOfWallFloorByTilePos(1, 1, 1);
             this.m_Hero.SetPos(point.x, point.y);
             this.xPre = this.m_Hero.RoleMoveAni.x;

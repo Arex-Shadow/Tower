@@ -7,12 +7,13 @@ module Tower
   export class MyNode
   {
      public posTile:Point = new Point();
-     //public posScreen:Point = new Point
+     public posScreen:Point = new Point();
      public f:number = 0;
      public g:number = 0;
      public h:number = 0;
      public isWall:boolean = false;
-     //public is
+     public isKey:boolean = false;
+     public isMaster:boolean = false;
      public debug(log:string)
      {
        console.log(log);
@@ -29,14 +30,19 @@ module Tower
        return `pos:{${this.posTile.x},${this.posTile.y}} f:{${this.f}} g:{${this.g}} h:{${this.h}} isWall:{${this.isWall}} `;
      }
   }
+
+  const WALL_LAYER_IDX:number = 1;
+  const NPC_LAYER_IDX:number = 2;
 	export class Astar
 	{
+      
+
       public grid:Array<Array<MyNode>> = new Array<Array<MyNode>>();
-      constructor(map :laya.map.TiledMap, lyrIdx:number)
+      constructor(map :laya.map.TiledMap)
       {
-          this.init(map, lyrIdx);
+          this.init(map);
       }
-      init(map :laya.map.TiledMap, lyrIdx:number) 
+      init(map :laya.map.TiledMap) 
       {
           let yCount:number = map.numColumnsTile;
           let xCount:number = map.numRowsTile;
@@ -48,20 +54,21 @@ module Tower
                 this.grid[i][j] = new MyNode();
                 this.grid[i][j].f = this.grid[i][j].g = this.grid[i][j].h = 0;
                 this.grid[i][j].parent = null;
-                this.grid[i][j].isWall = (map.getLayerByIndex(lyrIdx).getTileData(j,i) > 0);
+                this.grid[i][j].isWall = (map.getLayerByIndex(WALL_LAYER_IDX).getTileData(j,i) > 0);
+                this.grid[i][j].isMaster = (map.getLayerByIndex(NPC_LAYER_IDX).getTileData(j,i) > 0);
                 this.grid[i][j].posTile = new Point(i,j);
                 let result : laya.maths.Point = new laya.maths.Point();
-                map.getLayerByIndex(lyrIdx).getScreenPositionByTilePos(j, i, result);
-                this.createText(i,j,this.grid[i][j].isWall, result);
+                map.getLayerByIndex(WALL_LAYER_IDX).getScreenPositionByTilePos(j, i, result);
+                this.createText(i, j, this.grid[i][j].isWall, this.grid[i][j].isMaster, result);
             }
           }
         }
-        private createText(i,j,isWall, pos): void 
+        private createText(i,j,isWall, isNPC, pos): void 
 		    {
           let label: Laya.Label = new Laya.Label();
           label.font = "Microsoft YaHei";
-          label.text = `${i},${j},${isWall}`;
-          label.fontSize = 10;
+          label.text = `${i},${j},${isWall?'T':'F'},${isNPC?'T':'F'}`;
+          label.fontSize = 14;
           label.color = "#00FFFF";
           Laya.stage.addChild(label);
           label.x = pos.x;
@@ -125,7 +132,8 @@ module Tower
                 }
                 // g score is the shortest distance from start to current node, we need to check if
                 //   the path we have arrived at this neighbor is the shortest one we have seen yet
-                var gScore = currentNode.g + 1; // 1 is the distance from a node to it's neighbor
+                // Give priority to the path without NPC
+                var gScore = currentNode.g + 1 + (currentNode.isMaster ? 1 : 0); // 1 is the distance from a node to it's neighbor
                 var gScoreIsBest = false;
                 if(openList.indexOf(neighbor) < 0) 
                 {
