@@ -60,6 +60,9 @@ module Tower
                 let result : laya.maths.Point = new laya.maths.Point();
                 map.getLayerByIndex(WALL_LAYER_IDX).getScreenPositionByTilePos(j, i, result);
                 this.createText(i, j, this.grid[i][j].isWall, this.grid[i][j].isMaster, result);
+                this.grid[i][j].posScreen = result;
+                this.grid[i][j].posScreen.x += map.tileWidth / 2;
+                this.grid[i][j].posScreen.y += map.tileHeight / 2;
             }
           }
         }
@@ -97,7 +100,7 @@ module Tower
                   let curr = openList[i];
                   let ret = [];
                   while(curr.parent) {
-                    ret.push(curr.posTile);
+                    ret.push(curr.posScreen);
                     curr = curr.parent;
                   }
                   return ret.reverse();

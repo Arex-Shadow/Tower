@@ -4,6 +4,7 @@
 var Tower;
 (function (Tower) {
     var Handler = Laya.Handler;
+    var handler = laya.utils.Handler;
     var Loader = Laya.Loader;
     var Tween = Laya.Tween;
     var RoleType;
@@ -22,6 +23,7 @@ var Tower;
     var Roles = (function () {
         function Roles(Type, CompleteHandler) {
             this._strAtlasFile = "res/Role/move";
+            this.m_bMoveCompleted = true;
             var str = this._strAtlasFile + ".json";
             console.log(str);
             //Laya.loader.load(str, Handler.create(this, this.CreateRole, [Type]), null, Loader.ATLAS);
@@ -84,22 +86,36 @@ var Tower;
             this.RoleMoveAni.index = 0;
         };
         Roles.prototype.moveTo = function (pt) {
-            if (pt.x != this.RoleMoveAni.x) {
-                if (pt.x < this.RoleMoveAni.x)
+            /*while(!this.m_bMoveCompleted)
+            {
+                /*setTimeout(function() {
+                    //console.log(`sleep ${Date.now}`);
+                }, 100);*/
+            //}
+            this.m_bMoveCompleted = false;
+            Tween.to(this.RoleMoveAni, { x: (pt.x), y: (pt.y) }, 3000, null, handler.create(this, this.moveCompleted));
+            /*if(pt.x != this.RoleMoveAni.x)
+            {
+                if(pt.x < this.RoleMoveAni.x)
                     this.SetMoveDir(MoveDir.Left);
-                else if (pt.x > this.RoleMoveAni.x)
+                else if(pt.x > this.RoleMoveAni.x)
                     this.SetMoveDir(MoveDir.Right);
-                var nTimeX = Math.abs(pt.x - this.RoleMoveAni.x) * 5;
-                Tween.to(this.RoleMoveAni, { x: (pt.x) }, nTimeX);
+                let nTimeX : number = Math.abs(pt.x - this.RoleMoveAni.x) * 2;
+                Tween.to(this.RoleMoveAni, {x : (pt.x)}, nTimeX, null, handler.create(this, this.moveCompleted));
             }
-            if (pt.y != this.RoleMoveAni.y) {
-                if (pt.y < this.RoleMoveAni.y)
+            if(pt.y != this.RoleMoveAni.y)
+            {
+                if(pt.y < this.RoleMoveAni.y)
                     this.SetMoveDir(MoveDir.Up);
-                else if (pt.y > this.RoleMoveAni.y)
+                else if(pt.y > this.RoleMoveAni.y)
                     this.SetMoveDir(MoveDir.Down);
-                var nTimeY = Math.abs(pt.y - this.RoleMoveAni.y) * 5;
-                Tween.to(this.RoleMoveAni, { y: (pt.y) }, nTimeY);
-            }
+                let nTimeY : number = Math.abs(pt.y - this.RoleMoveAni.y) * 3;
+                Tween.to(this.RoleMoveAni, {y : (pt.y)}, nTimeY, null, handler.create(this, this.moveCompleted));
+            }*/
+        };
+        Roles.prototype.moveCompleted = function () {
+            console.log('move Completed');
+            this.m_bMoveCompleted = true;
         };
         return Roles;
     }());

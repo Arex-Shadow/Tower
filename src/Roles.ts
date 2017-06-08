@@ -4,6 +4,7 @@
 module Tower
 {
 	import Handler = Laya.Handler;
+	import handler = laya.utils.Handler;
 	import Loader = Laya.Loader;
 	import Rectangle = Laya.Rectangle;
 	import Tween   = Laya.Tween;
@@ -23,6 +24,7 @@ module Tower
 	export class Roles
 	{
 		readonly _strAtlasFile:string = "res/Role/move";
+		 m_bMoveCompleted:boolean = true;
 		//private MoveAni:Laya.Animation[] = [];// move animation
 		public RoleMoveAni : Laya.Animation;
 		constructor(Type:RoleType, CompleteHandler?:laya.utils.Handler)
@@ -91,14 +93,22 @@ module Tower
 		}
 		public moveTo(pt:laya.maths.Point)
 		{
-			if(pt.x != this.RoleMoveAni.x)
+			/*while(!this.m_bMoveCompleted)
+			{
+				/*setTimeout(function() {
+					//console.log(`sleep ${Date.now}`);
+				}, 100);*/
+			//}
+			this.m_bMoveCompleted = false;
+			Tween.to(this.RoleMoveAni, {x:(pt.x), y :(pt.y)}, 3000, null, handler.create(this, this.moveCompleted));
+			/*if(pt.x != this.RoleMoveAni.x)
 			{
 				if(pt.x < this.RoleMoveAni.x)
 					this.SetMoveDir(MoveDir.Left);
 				else if(pt.x > this.RoleMoveAni.x)
 					this.SetMoveDir(MoveDir.Right);
-				let nTimeX : number = Math.abs(pt.x - this.RoleMoveAni.x) * 5;
-				Tween.to(this.RoleMoveAni, {x : (pt.x)}, nTimeX);
+				let nTimeX : number = Math.abs(pt.x - this.RoleMoveAni.x) * 2;
+				Tween.to(this.RoleMoveAni, {x : (pt.x)}, nTimeX, null, handler.create(this, this.moveCompleted));
 			}
 			if(pt.y != this.RoleMoveAni.y)
 			{
@@ -106,9 +116,15 @@ module Tower
 					this.SetMoveDir(MoveDir.Up);
 				else if(pt.y > this.RoleMoveAni.y)
 					this.SetMoveDir(MoveDir.Down);
-				let nTimeY : number = Math.abs(pt.y - this.RoleMoveAni.y) * 5;
-				Tween.to(this.RoleMoveAni, {y : (pt.y)}, nTimeY);
-			}
+				let nTimeY : number = Math.abs(pt.y - this.RoleMoveAni.y) * 3;
+				Tween.to(this.RoleMoveAni, {y : (pt.y)}, nTimeY, null, handler.create(this, this.moveCompleted));
+			}*/
+			
+		}
+		private moveCompleted()
+		{
+			console.log('move Completed');
+			this.m_bMoveCompleted = true;
 		}
 	}
 }

@@ -9,6 +9,9 @@ module Tower
 	var Tween   = Laya.Tween;
 	import myMap = Tower.LoadTiledMap;
 	import mySprite = Tower.LoadSprite;
+	import Handler = laya.utils.Handler;
+	import Loader = laya.net.Loader;
+
 	export class AppLancher
      {
 		private testSP : Laya.Sprite;
@@ -20,7 +23,8 @@ module Tower
 		private xPre:number = 0;
 		private yPre:number = 0;
 		private g:Laya.Sprite;
-		constructor() {
+		constructor() 
+		{
 			// 不支持eWebGL时自动切换至Canvas
 			Laya.init(Browser.width, Browser.height, WebGL);
 			Laya.stage.scaleMode = Stage.SCALE_SHOWALL;
@@ -29,8 +33,21 @@ module Tower
 			Laya.stage.alignH = Stage.ALIGN_CENTER;
 			//Laya.stage.scaleMode = "showall";
 			//Laya.stage.bgColor = "#FFFFFF";
-			Laya.stage.on(Laya.Event.CLICK, this, this.OnClick);
+			Laya.stage.on(Laya.Event.CLICK, this, this.OnClick);//GUI test
+			//设置横竖屏
+        	Laya.stage.screenMode = "horizontal";
+        
+			Laya.loader.load([
+			{ url: "res/HeroStatus@atlas0.png", type: Loader.IMAGE },
+			{ url: "res/HeroStatus.fui", type: Loader.BUFFER }
+			], Handler.create(this, this.onFairyGUILoaded));
 			
+		}
+		private onFairyGUILoaded():void
+		{
+			Laya.stage.addChild(fairygui.GRoot.inst.displayObject);
+			fairygui.UIPackage.addPackage("res/HeroStatus");
+			new GoodsPanel();
 		}
 		public Init():void
 		{
@@ -42,6 +59,7 @@ module Tower
 		}
 		private TiledMapLoadCompleted():void
 		{
+			this.m_map.tiledMap.scale = 0.7;
 			this.m_map.resize();
 			if(this.m_Hero == undefined)
 			{
@@ -62,12 +80,14 @@ module Tower
 		
 		private OnClick():void
 		{
+			//用于绘制运动轨迹
 			if(this.g == undefined)
 			{
 				this.g = new Laya.Sprite();
 				Laya.stage.addChild(this.g);
 			}
 			this.g.graphics.clear();
+
 			//this.g.graphics.drawLine(this.xPre, this.yPre, Laya.stage.mouseX, Laya.stage.mouseY, "#ff0000", 3);
 			//this.xPre = Laya.stage.mouseX;
 			//this.yPre = Laya.stage.mouseY;
@@ -81,20 +101,43 @@ module Tower
 			let start = this.m_map.GetTilePosOfWallFloorByScreenPos(1, this.m_Hero.RoleMoveAni.x + this.m_Hero.RoleMoveAni.width / 2,
 			 this.m_Hero.RoleMoveAni.y + this.m_Hero.RoleMoveAni.height / 2);
 			let end = this.m_map.GetTilePosOfWallFloorByScreenPos(1, Laya.stage.mouseX, Laya.stage.mouseY);
+			if(end.x < 0 || end.y < 0) return;
 			console.log(`Start:${start} End:${end}`);
 			let ret = this.m_findPath.search(start, end);
 			console.log(ret.toString());
-			let lines = Array()
+			//let lines = Array()
 			ret.forEach((val)=>
 			{
-				let pt = this.m_map.GetScreenPosOfWallFloorByTilePos(1, val.y, val.x);
-				//this.m_Hero.moveTo(pt);
-				this.g.graphics.drawLine(this.xPre, this.yPre, pt.x, pt.y, "#ff0000", 3);
-				this.xPre = pt.x;
-				this.yPre = pt.y;
+				
+				//let pt = this.m_map.GetScreenPosOfWallFloorByTilePos(1, val.y, val.x);
+				//this.m_Hero.moveTo(val);
+				val.x += this.m_Hero.RoleMoveAni.width / 2;
+				val.y += this.m_Hero.RoleMoveAni.height / 2;
+				this.g.graphics.drawLine(this.xPre, this.yPre, val.x, 
+				val.y, "#ff0000", 3);
+				let nTimeX : number = Math.abs(val.x - this.xPre) * 5;
+				let nTimeY : number = Math.abs(val.y - this.yPre) * 5;
+				if(val.x < this.xPre)
+				{
+					this.timeLine.addLabel("TurnLeft", 0).to(this.m_Hero.RoleMoveAni,{x:val.x},nTimeX, null, 0);
+				}
+				else
+				{
+					this.timeLine.addLabel("TurnRight", 0).to(this.m_Hero.RoleMoveAni,{x:val.x},nTimeX, null, 0);
+				}
+				if(endY < this.yPre)
+				{
+					this.timeLine.addLabel("TurnUp", 0).to(this.m_Hero.RoleMoveAni,{y:val.y},nTimeY, null, 0);	
+				}
+				else
+				{
+					this.timeLine.addLabel("TurnDown", 0).to(this.m_Hero.RoleMoveAni,{y:val.y},nTimeY, null, 0);
+				}
+				this.xPre = val.x;
+				this.yPre = val.y;
 			});
 
-			this.m_Hero.SetPos(this.xPre, this.yPre);
+			//this.m_Hero.SetPos(this.xPre, this.yPre);
 			//根据距离设定时间保持运动的匀速
 			/*let nTimeX : number = Math.abs(endX - this.m_Hero.RoleMoveAni.x) * 5;
 			let nTimeY : number = Math.abs(endY - this.m_Hero.RoleMoveAni.y) * 5;
@@ -115,10 +158,10 @@ module Tower
 			else
 			{
 				this.timeLine.addLabel("TurnDown", 0).to(this.m_Hero.RoleMoveAni,{y:endY},nTimeY, null, 0);
-			}
+			}*/
 			this.timeLine.play(0,false);
 			this.timeLine.on(Laya.Event.LABEL, this, this.onTimeLineLabel);
-			this.timeLine.on(Laya.Event.COMPLETE,this,this.onTimeLineComplete);*/
+			this.timeLine.on(Laya.Event.COMPLETE,this,this.onTimeLineComplete);
 		}
 		private onTimeLineLabel(label:string)
 		{

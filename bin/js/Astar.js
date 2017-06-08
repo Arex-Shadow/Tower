@@ -51,6 +51,9 @@ var Tower;
                     var result = new laya.maths.Point();
                     map.getLayerByIndex(WALL_LAYER_IDX).getScreenPositionByTilePos(j, i, result);
                     this.createText(i, j, this.grid[i][j].isWall, this.grid[i][j].isMaster, result);
+                    this.grid[i][j].posScreen = result;
+                    this.grid[i][j].posScreen.x += map.tileWidth / 2;
+                    this.grid[i][j].posScreen.y += map.tileHeight / 2;
                 }
             }
         };
@@ -83,7 +86,7 @@ var Tower;
                         var curr = openList[i];
                         var ret = [];
                         while (curr.parent) {
-                            ret.push(curr.posTile);
+                            ret.push(curr.posScreen);
                             curr = curr.parent;
                         }
                         return ret.reverse();
@@ -115,6 +118,7 @@ var Tower;
                     }
                     // g score is the shortest distance from start to current node, we need to check if
                     //   the path we have arrived at this neighbor is the shortest one we have seen yet
+                    // Give priority to the path without NPC
                     var gScore = currentNode.g + 1 + (currentNode.isMaster ? 1 : 0); // 1 is the distance from a node to it's neighbor
                     var gScoreIsBest = false;
                     if (openList.indexOf(neighbor) < 0) {

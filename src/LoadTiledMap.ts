@@ -1,14 +1,16 @@
 /**
 * name 
 */
-module Tower{
+module Tower
+{
 	import TiledMap = Laya.TiledMap;
 	import Event = Laya.Event;
 	import Handler = Laya.Handler;
 	import Rectangle = Laya.Rectangle;
 	import Browser = Laya.Browser;
 
-	export class LoadTiledMap{
+	export class LoadTiledMap
+	{
 		public tiledMap: TiledMap;
 		private mLastMouseX: number = 0;
 		private mLastMouseY: number = 0;
